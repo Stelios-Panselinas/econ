@@ -1,4 +1,5 @@
 import streamlit as st
+import json
 import pandas as pd
 import gspread
 from oauth2client.service_account import ServiceAccountCredentials
@@ -12,7 +13,8 @@ st.title("☁️ Cloud-Synced Finance Tracker")
 def get_gspread_client():
     scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
     # Ensure 'credentials.json' is in your script folder!
-    creds = ServiceAccountCredentials.from_json_keyfile_name("credentials.json", scope)
+    creds_dict = json.loads(st.secrets["google_creds"])
+    creds = ServiceAccountCredentials.from_json_keyfile_dict(creds_dict, scope)
     return gspread.authorize(creds)
 
 def load_data():
