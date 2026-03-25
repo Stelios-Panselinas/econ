@@ -87,3 +87,32 @@ if not data.empty:
     st.dataframe(data.drop(columns=['Date_Sort'], errors='ignore'), use_container_width=True)
 else:
     st.info("No data found in Google Sheets. Add your first month!")
+
+# --- DELETE FUNCTIONALITY ---
+st.divider()
+st.subheader("🗑️ Manage Records")
+
+if not data.empty:
+    # Create a dropdown to select which month to remove
+    delete_month = st.selectbox("Select a month to delete:", data["Month"].unique())
+    
+    if st.button("Delete Selected Month", type="primary"):
+        try:
+            client = get_gspread_client()
+            sheet = client.open("Monthly_Finances").sheet1
+            
+            # Find the cell matching the month string
+            cell = sheet.find(delete_month)
+            
+            if cell:
+                # Delete the entire row from Google Sheets
+                sheet.delete_rows(cell.row)
+                st.success(f"Successfully deleted {delete_month} from the cloud!")
+                # Rerun to refresh the data and charts
+                st.rerun()
+            else:
+                st.error("Month not found in the sheet.")
+        except Exception as e:
+            st.error(f"Error deleting record: {e}")
+else:
+    st.write("No records available to delete.")
