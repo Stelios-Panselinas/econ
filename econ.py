@@ -12,9 +12,16 @@ st.title("☁️ Cloud-Synced Finance Tracker")
 # --- GOOGLE SHEETS SETUP ---
 def get_gspread_client():
     scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
-    # Ensure 'credentials.json' is in your script folder!
-    creds_dict = json.loads(st.secrets["google_creds"])
-    creds = ServiceAccountCredentials.from_json_keyfile_dict(creds_dict, scope)
+    
+    # We force st.secrets into a standard Python dictionary
+    creds_info = dict(st.secrets["google_creds"])
+    
+    # Google's library needs the private key to have actual newlines (\n)
+    # Sometimes TOML escapes these, so we ensure they are correct:
+    if "private_key" in creds_info:
+        creds_info["private_key"] = creds_info["private_key"].replace("\\n", "\n")
+        
+    creds = ServiceAccountCredentials.from_json_keyfile_dict(creds_info, scope)
     return gspread.authorize(creds)
 
 def load_data():
